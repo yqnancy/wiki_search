@@ -1,0 +1,526 @@
+[
+  {
+    "id": "fact-01",
+    "category": "fact",
+    "question": "What year did the Eiffel Tower open?",
+    "expected_answer": "1889",
+    "acceptable_answers": [
+      "1889"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Eiffel Tower",
+        "section": "(lead)",
+        "quote": "it was constructed as the centrepiece of the 1889 World's Fair",
+        "revid": 1376706466,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Eiffel Tower",
+        "section": "Inauguration and the 1889 exposition",
+        "quote": "the tower was not opened to the public until nine days after the opening of the exposition on 6 May",
+        "revid": 1376706466,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": "Opened to the public on 15 May 1889 (nine days after 6 May). Any answer giving 1889 is correct."
+    }
+  },
+  {
+    "id": "fact-02",
+    "category": "fact",
+    "question": "What is the capital of Australia?",
+    "expected_answer": "Canberra",
+    "acceptable_answers": [
+      "Canberra"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Canberra",
+        "section": "(lead)",
+        "quote": "is the capital city of Australia",
+        "revid": 1374337288,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "fact-03",
+    "category": "fact",
+    "question": "Who wrote the novel One Hundred Years of Solitude?",
+    "expected_answer": "Gabriel García Márquez",
+    "acceptable_answers": [
+      "García Márquez",
+      "Garcia Marquez"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "One Hundred Years of Solitude",
+        "section": "(lead)",
+        "quote": "is a 1967 novel by Colombian author Gabriel García Márquez",
+        "revid": 1376599563,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "fact-04",
+    "category": "fact",
+    "question": "How tall is Mount Kilimanjaro?",
+    "expected_answer": "5,895 m (19,341 ft) above sea level",
+    "acceptable_answers": [
+      "5,895",
+      "5895",
+      "19,341",
+      "19341"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Mount Kilimanjaro",
+        "section": "(lead)",
+        "quote": "at 5,895 m (19,341 ft) above sea level",
+        "revid": 1376247192,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": "The article also gives 4,900 m above its plateau base; above sea level is the conventional reading."
+    }
+  },
+  {
+    "id": "claim-01",
+    "category": "claim",
+    "question": "Albert Einstein failed mathematics in school.",
+    "expected_answer": "He excelled at mathematics",
+    "acceptable_answers": [],
+    "expected_verdict": "Contradicted",
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Albert Einstein",
+        "section": "Childhood, youth and education",
+        "quote": "Einstein excelled at physics and mathematics from an early age",
+        "revid": 1376489467,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Albert Einstein",
+        "section": "Childhood, youth and education",
+        "quote": "performed with distinction in physics and mathematics",
+        "revid": 1376489467,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "claim-02",
+    "category": "claim",
+    "question": "Is it true that the Great Wall of China is visible from the Moon with the naked eye?",
+    "expected_answer": "Not visible to the naked eye from the Moon",
+    "acceptable_answers": [],
+    "expected_verdict": "Contradicted",
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Great Wall of China",
+        "section": "From the Moon",
+        "quote": "The Great Wall of China cannot be seen by the naked human eye from the Moon",
+        "revid": 1374512030,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "claim-03",
+    "category": "claim",
+    "question": "Marie Curie won Nobel Prizes in two different sciences.",
+    "expected_answer": "Physics (1903) and Chemistry (1911)",
+    "acceptable_answers": [],
+    "expected_verdict": "Supported",
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Marie Curie",
+        "section": "(lead)",
+        "quote": "the only person to win a Nobel Prize in two different scientific fields",
+        "revid": 1375668231,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "claim-04",
+    "category": "claim",
+    "question": "Napoleon Bonaparte was unusually short for his time.",
+    "expected_answer": "He was of average height (about 168 cm)",
+    "acceptable_answers": [],
+    "expected_verdict": "Contradicted",
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Napoleon",
+        "section": "Appearance and image",
+        "quote": "at about 168 cm (5 ft 6 in), he was of average height",
+        "revid": 1376658131,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Napoleon complex",
+        "section": "(lead)",
+        "quote": "Though Napoleon was close to average height for his era, British cartoonist James Gillray nonetheless popularized the myth of Napoleon being short.",
+        "revid": 1370486155,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "claim-05",
+    "category": "claim",
+    "question": "Thomas Edison invented the light bulb.",
+    "expected_answer": "Edison made the first practical bulb, but earlier inventors made incandescent lamps",
+    "acceptable_answers": [],
+    "expected_verdict": "Partially supported",
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Incandescent light bulb",
+        "section": "History",
+        "quote": "list inventors of incandescent lamps prior to Joseph Swan and Thomas Edison",
+        "revid": 1376330712,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Incandescent light bulb",
+        "section": "History",
+        "quote": "They conclude that Edison's version was the first practical implementation",
+        "revid": 1376330712,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Incandescent light bulb",
+        "section": "History",
+        "quote": "Joseph Swan's incandescent light bulb pre-dated Edison's",
+        "revid": 1376330712,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "decided",
+      "note": "Decided 2026-09-25: only 'Partially supported' is correct, matching Wikipedia's framing (Edison made the first practical bulb, not the first bulb)."
+    }
+  },
+  {
+    "id": "multi-01",
+    "category": "multi-hop",
+    "question": "Who directed the film that won the Academy Award for Best Picture for the year the Berlin Wall fell?",
+    "expected_answer": "Bruce Beresford",
+    "acceptable_answers": [
+      "Bruce Beresford",
+      "Beresford"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Fall of the Berlin Wall",
+        "section": "(lead)",
+        "quote": "The Berlin Wall fell on 9 November 1989",
+        "revid": 1374725469,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "62nd Academy Awards",
+        "section": "(lead)",
+        "quote": "honored the best films of 1989",
+        "revid": 1369988468,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "62nd Academy Awards",
+        "section": "(lead)",
+        "quote": "Driving Miss Daisy won four awards, including Best Picture",
+        "revid": 1369988468,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Driving Miss Daisy",
+        "section": "(lead)",
+        "quote": "directed by Bruce Beresford",
+        "revid": 1375981956,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "decided",
+      "note": "Decided 2026-09-25: only Bruce Beresford is correct; 'Best Picture for the year' means films of 1989. Rain Man / Barry Levinson (the 1989 ceremony) is wrong."
+    }
+  },
+  {
+    "id": "multi-02",
+    "category": "multi-hop",
+    "question": "In which country was the founder of SpaceX born?",
+    "expected_answer": "South Africa",
+    "acceptable_answers": [
+      "South Africa"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "SpaceX",
+        "section": "(lead)",
+        "quote": "SpaceX was founded in 2002 by Elon Musk",
+        "revid": 1376227932,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Elon Musk",
+        "section": "(lead)",
+        "quote": "in Pretoria, South Africa",
+        "revid": 1376742741,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "multi-03",
+    "category": "multi-hop",
+    "question": "At which university did the author of A Brief History of Time hold the Lucasian Professorship of Mathematics?",
+    "expected_answer": "University of Cambridge",
+    "acceptable_answers": [
+      "Cambridge"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "A Brief History of Time",
+        "section": "(lead)",
+        "quote": "a book on cosmology by the physicist Stephen Hawking",
+        "revid": 1376621538,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Stephen Hawking",
+        "section": "1975–1990",
+        "quote": "In 1979, Hawking was elected Lucasian Professor of Mathematics at the University of Cambridge.",
+        "revid": 1375586847,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "multi-04",
+    "category": "multi-hop",
+    "question": "What river flows through the city where the Mona Lisa is displayed?",
+    "expected_answer": "The Seine",
+    "acceptable_answers": [
+      "Seine"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Mona Lisa",
+        "section": "(lead)",
+        "quote": "It has normally been on display at the Louvre in Paris since 1797.",
+        "revid": 1376495998,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Seine",
+        "section": "(lead)",
+        "quote": "flowing through Paris and into the English Channel at Le Havre",
+        "revid": 1370741045,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "multi-05",
+    "category": "multi-hop",
+    "question": "Who was the U.S. president when the first person to walk on the Moon was born?",
+    "expected_answer": "Herbert Hoover",
+    "acceptable_answers": [
+      "Hoover"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Neil Armstrong",
+        "section": "(lead)",
+        "quote": "became the first person to walk on the Moon",
+        "revid": 1375337204,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Neil Armstrong",
+        "section": "Early life and education",
+        "quote": "Auglaize County, Ohio, on August 5, 1930",
+        "revid": 1375337204,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Herbert Hoover",
+        "section": "(lead)",
+        "quote": "was the 31st president of the United States, serving from 1929 to 1933",
+        "revid": 1376744571,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": ""
+    }
+  },
+  {
+    "id": "ambig-01",
+    "category": "ambiguous",
+    "question": "When was Mercury discovered?",
+    "expected_answer": null,
+    "acceptable_answers": [],
+    "expected_verdict": null,
+    "should_clarify": true,
+    "evidence": [
+      {
+        "title": "Mercury",
+        "section": "(lead)",
+        "quote": "Mercury (planet), the closest planet to the Sun",
+        "revid": 1376049828,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Mercury",
+        "section": "(lead)",
+        "quote": "Mercury (element), a chemical element",
+        "revid": 1376049828,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "decided",
+      "note": "Decided 2026-09-25: asking for clarification passes; so does one answer that covers both the planet and the element, clearly separated."
+    },
+    "also_accept": "An answer covering both Mercury (planet) and Mercury (element), clearly separated, instead of a clarifying question.",
+    "also_accept_mentions": [
+      "planet",
+      "element"
+    ]
+  },
+  {
+    "id": "ambig-02",
+    "category": "ambiguous",
+    "question": "How many studio albums did Queen release?",
+    "expected_answer": "15",
+    "acceptable_answers": [
+      "15",
+      "fifteen"
+    ],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [
+      {
+        "title": "Queen discography",
+        "section": "(lead)",
+        "quote": "British rock band Queen have released 15 studio albums",
+        "revid": 1373483515,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "verified",
+      "note": "'Queen' is a disambiguation page, but 'studio albums' points clearly to the band, so the tool should not ask."
+    }
+  },
+  {
+    "id": "ambig-03",
+    "category": "ambiguous",
+    "question": "What is the population of Springfield?",
+    "expected_answer": null,
+    "acceptable_answers": [],
+    "expected_verdict": null,
+    "should_clarify": true,
+    "evidence": [
+      {
+        "title": "Springfield",
+        "section": "(lead)",
+        "quote": "Springfield may also refer to",
+        "revid": 1376060456,
+        "verified_on": "2026-09-25"
+      },
+      {
+        "title": "Springfield",
+        "section": "Australia",
+        "quote": "Springfield, Queensland",
+        "revid": 1376060456,
+        "verified_on": "2026-09-25"
+      }
+    ],
+    "review": {
+      "status": "decided",
+      "note": "Decided 2026-09-25: the tool must ask; answering for one assumed Springfield fails."
+    }
+  },
+  {
+    "id": "oos-01",
+    "category": "out-of-scope",
+    "question": "What will the weather be in Paris tomorrow?",
+    "expected_answer": null,
+    "acceptable_answers": [],
+    "expected_verdict": null,
+    "should_clarify": false,
+    "evidence": [],
+    "review": {
+      "status": "verified",
+      "note": "Wikipedia has no forecasts. Correct behaviour: say it's not covered (question_type 'not-covered') with no invented forecast."
+    }
+  }
+]

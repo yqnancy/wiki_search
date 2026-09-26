@@ -1,0 +1,660 @@
+[
+  {
+    "id": "research-01",
+    "category": "research",
+    "question": "Tell me about the history of LLMs",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "pre-transformer language models (n-grams, RNN/LSTM)",
+      "the transformer (2017)",
+      "BERT and the GPT series",
+      "scaling to very large models",
+      "ChatGPT (2022) and instruction tuning / RLHF",
+      "open-weight models",
+      "the most recent developments Wikipedia covers, dated (e.g. 'as of 2025, ...')"
+    ],
+    "must_not_include": [
+      "Master of Laws (the LLM degree)"
+    ],
+    "expected_limitations": [],
+    "review": {
+      "status": "approved",
+      "note": "must_cover reviewed and approved 2026-09-26."
+    }
+  },
+  {
+    "id": "research-02",
+    "category": "research",
+    "question": "Compare the 5 most common statistical distributions and summarize what they are best suited to model",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "five named distributions, each with what it models",
+      "the Normal distribution is one of the five",
+      "a comparison table",
+      "discrete vs continuous",
+      "how the five were chosen, cited or labelled as judgment"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "Wikipedia doesn't rank distributions by how common they are, unless the brief cites a source that lists common ones"
+    ],
+    "review": {
+      "status": "approved",
+      "note": "must_cover reviewed and approved 2026-09-26."
+    }
+  },
+  {
+    "id": "goal-01",
+    "category": "goal",
+    "question": "I'm visiting Kyoto next spring for the first time. Give me a short history of the city so I can appreciate the temples and shrines I'll see.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": "Appreciate Kyoto's temples and shrines on a first visit",
+    "time_sensitive": false,
+    "must_cover": [
+      "Kyoto's founding as the imperial capital Heian-kyō (794) and its long role as capital",
+      "the main historical periods that shaped its religious sites",
+      "the difference between Buddhist temples and Shinto shrines",
+      "why so many historic sites survive (e.g. largely spared WWII bombing; UNESCO Historic Monuments of Ancient Kyoto)",
+      "a short section for the trip, mostly cited facts about specific temples and shrines that help appreciate them (e.g. what distinguishes Kinkaku-ji, Kiyomizu-dera, Fushimi Inari), with at most light recommendations"
+    ],
+    "must_not_include": [
+      "Kyoto Protocol",
+      "Kyoto Animation"
+    ],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "goal-02",
+    "category": "goal",
+    "question": "I want to switch careers into data analysis and people tell me to learn Python. Give me an overview of Python and why it's used for data work.",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": null,
+    "goal": "Start learning Python for a career in data analysis",
+    "time_sensitive": true,
+    "must_cover": [
+      "what Python is: a general-purpose, readable programming language",
+      "brief origin (Guido van Rossum, first released 1991)",
+      "why it's popular for data work: libraries such as NumPy, pandas and Matplotlib",
+      "a short section for the career switch, mostly cited facts about the tools used in data work (e.g. what pandas and Jupyter notebooks are for), with at most light recommendations",
+      "the current state of Python and its main data libraries as Wikipedia describes it, dated where it matters (e.g. current major version)"
+    ],
+    "must_not_include": [
+      "Python (genus) or pythons as snakes",
+      "Monty Python"
+    ],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "goal-03",
+    "category": "goal",
+    "question": "I'm writing a high-school report on the causes of the French Revolution. Where should I start?",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": null,
+    "goal": "Write a high-school report on the causes of the French Revolution",
+    "time_sensitive": false,
+    "must_cover": [
+      "the royal government's financial crisis and debt",
+      "the social order of the Estates of the realm and resentment of privilege",
+      "Enlightenment ideas",
+      "poor harvests and high bread prices",
+      "a short section for the report, mostly cited facts about key events or documents worth researching next (e.g. the Estates General of 1789, the Declaration of the Rights of Man and of the Citizen), with at most light recommendations"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "historians weigh these causes differently (a debate the brief can note)"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "goal-04",
+    "category": "goal",
+    "question": "We're thinking about buying our first electric car. Explain how EV batteries work and what affects how long they last.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": "Decide on a first electric car",
+    "time_sensitive": true,
+    "must_cover": [
+      "EVs mostly use lithium-ion battery packs",
+      "range and charging basics",
+      "what degrades batteries (charge cycles, heat, frequent fast charging, time)",
+      "typical battery lifespan or warranty expectations as Wikipedia reports them",
+      "a short section for the purchase decision, mostly cited facts that bear on it (e.g. home versus public charging, typical battery warranties), with at most light recommendations",
+      "the latest battery developments and figures Wikipedia reports, dated (e.g. current chemistries such as LFP, lifespan or warranty norms 'as of' a year)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "model-specific battery figures and current prices aren't something Wikipedia can give reliably"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "goal-05",
+    "category": "goal",
+    "question": "I'm preparing for a school debate arguing against nuclear power. Give me the key facts on both sides so I can anticipate the other team's arguments.",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": null,
+    "goal": "Argue against nuclear power in a school debate",
+    "time_sensitive": false,
+    "must_cover": [
+      "arguments against: radioactive waste, major accidents (Chernobyl, Fukushima), high cost and long build times",
+      "arguments for: low carbon emissions, low deaths per unit of energy, reliable baseload power",
+      "a short section for the debate, mostly cited facts behind the other side's likely arguments, with at most light recommendations"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "this is a contested policy question; the brief should present both sides fairly rather than pick a winner"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "goal-06",
+    "category": "goal",
+    "question": "I just adopted a retired racing greyhound. Tell me about the breed's history and temperament so I can understand her better.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": "Understand and care for an adopted retired racing greyhound",
+    "time_sensitive": false,
+    "must_cover": [
+      "ancient origins as a sighthound bred for coursing",
+      "greyhound racing and the adoption of retired racers",
+      "temperament as Wikipedia describes it (e.g. gentle, calm, sprinters rather than endurance runners)",
+      "a short section for a new owner, mostly cited facts about retired greyhounds (e.g. known breed health issues, adoption programmes), with at most light recommendations"
+    ],
+    "must_not_include": [
+      "Greyhound Lines (the bus company)",
+      "Greyhound (the 2020 film)"
+    ],
+    "expected_limitations": [
+      "individual dogs vary; breed temperament is a generalisation"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-01a",
+    "category": "reader-level",
+    "question": "My kid asked me how mRNA vaccines work and I had no idea what to say. Can you explain it simply?",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": "level-01b",
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "the vaccine carries instructions (mRNA) for cells to make a harmless piece of the virus, such as the spike protein",
+      "the immune system learns to recognise it",
+      "the mRNA doesn't change a person's DNA and breaks down",
+      "familiar examples (Pfizer–BioNTech and Moderna COVID-19 vaccines)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-01b",
+    "category": "reader-level",
+    "question": "I'm an immunology PhD student. Give me an overview of mRNA vaccine platforms: lipid nanoparticle delivery, nucleoside modification, and how they compare with viral-vector vaccines.",
+    "expected_mode": "brief",
+    "reader_level": "expert",
+    "pair": "level-01a",
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "lipid nanoparticle delivery",
+      "nucleoside modification (e.g. pseudouridine / N1-methylpseudouridine) to reduce innate immune activation",
+      "comparison with viral-vector vaccines (e.g. Oxford–AstraZeneca)",
+      "key development history (e.g. Karikó and Weissman; 2023 Nobel Prize)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-02a",
+    "category": "reader-level",
+    "question": "I keep hearing about quantum entanglement in sci-fi shows. What is it really, in plain terms?",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": "level-02b",
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "entangled particles have linked measurement outcomes, however far apart",
+      "Einstein's 'spooky action at a distance' objection",
+      "it can't be used to send messages faster than light",
+      "real uses or experiments (e.g. quantum cryptography or computing)"
+    ],
+    "must_not_include": [
+      "Entanglement (the film or album)"
+    ],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-02b",
+    "category": "reader-level",
+    "question": "I've taken graduate quantum mechanics. Summarize the history of Bell test experiments and the loopholes they progressively closed.",
+    "expected_mode": "brief",
+    "reader_level": "expert",
+    "pair": "level-02a",
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "the EPR paradox (1935) and Bell's theorem (1964)",
+      "early tests (Freedman–Clauser 1972, Aspect in the early 1980s)",
+      "the main loopholes: locality, detection efficiency, freedom of choice",
+      "the 2015 loophole-free experiments",
+      "the 2022 Nobel Prize (Aspect, Clauser, Zeilinger)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-03a",
+    "category": "reader-level",
+    "question": "Why does everything cost more than it used to? Explain inflation like I'm new to economics.",
+    "expected_mode": "brief",
+    "reader_level": "beginner",
+    "pair": "level-03b",
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "inflation is a general rise in prices, so money buys less",
+      "how it's measured (e.g. consumer price index)",
+      "main causes in plain terms (too much demand, rising costs, money supply)",
+      "what central banks do about it (raise interest rates)"
+    ],
+    "must_not_include": [
+      "cosmic inflation"
+    ],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-03b",
+    "category": "reader-level",
+    "question": "I'm an economics grad student. Give me an overview of the main schools of thought on the causes of inflation and how the 2021–2023 inflation surge has been interpreted.",
+    "expected_mode": "brief",
+    "reader_level": "expert",
+    "pair": "level-03a",
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "the quantity theory of money and monetarism",
+      "Keynesian demand-pull and cost-push views, and the Phillips curve",
+      "the role of expectations (adaptive and rational expectations)",
+      "competing interpretations of the 2021–2023 surge (supply-chain disruption, energy prices, fiscal and monetary stimulus)",
+      "the latest assessments of the 2021–2023 surge that Wikipedia reports, dated"
+    ],
+    "must_not_include": [
+      "cosmic inflation"
+    ],
+    "expected_limitations": [
+      "interpretations of the recent surge are still debated"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "level-04a",
+    "category": "reader-level",
+    "question": "What is CRISPR and why is everyone so excited about it?",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": "level-04b",
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "a gene-editing tool adapted from a bacterial immune system",
+      "Cas9 cuts DNA at a spot chosen by a guide RNA",
+      "why it matters: cheaper, easier, more precise editing; medical uses (e.g. the approved sickle-cell therapy Casgevy) and agriculture",
+      "the 2020 Nobel Prize (Charpentier and Doudna)",
+      "ethical concerns (e.g. He Jiankui's gene-edited babies)",
+      "the current status of CRISPR medicine, dated (e.g. which therapies are approved as of when)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": "No explicit level hint: graded at the default curious beginner-to-intermediate level."
+    }
+  },
+  {
+    "id": "level-04b",
+    "category": "reader-level",
+    "question": "I work in a molecular biology lab. Compare CRISPR-Cas9 nuclease editing with base editing and prime editing: mechanisms, what edits each can make, and their main limitations.",
+    "expected_mode": "brief",
+    "reader_level": "expert",
+    "pair": "level-04a",
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "Cas9: double-strand breaks repaired by NHEJ or HDR",
+      "base editing: deaminase fused to a nickase, single-base changes without double-strand breaks",
+      "prime editing: pegRNA plus reverse transcriptase, broader small edits",
+      "limitations: off-target effects, PAM requirements, editing windows and efficiency, delivery",
+      "a comparison table",
+      "the latest developments in these editing methods Wikipedia reports, dated (e.g. first clinical uses of base or prime editing)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "debate-01",
+    "category": "controversy",
+    "question": "I've seen conflicting advice about saturated fat and heart disease. Give me an overview of what the research says and where experts disagree.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "mainstream guidance (e.g. WHO, American Heart Association) to limit saturated fat",
+      "the evidence behind it, e.g. replacing saturated fat with polyunsaturated fat lowers cardiovascular risk",
+      "the dissenting research and why advice seems conflicting",
+      "where the weight of evidence and expert consensus currently sits",
+      "the current official guidance and the most recent major reviews Wikipedia reports, dated"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "which parts are settled and which are still disputed",
+      "the brief isn't personal medical advice"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Was the yes/no question 'Is saturated fat actually bad for your heart?'. Rephrased as an overview request: under the short-answer-vs-brief rule, a yes/no question about a contested claim now gets a short answer."
+    }
+  },
+  {
+    "id": "debate-02",
+    "category": "controversy",
+    "question": "Give me an overview of the evidence on intermittent fasting versus ordinary calorie-cutting diets for weight loss.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": true,
+    "must_cover": [
+      "main types (time-restricted eating such as 16:8, the 5:2 diet, alternate-day fasting)",
+      "evidence that weight loss is broadly similar to ordinary calorie restriction",
+      "where evidence is limited (long-term effects, study size and quality)",
+      "the most recent research findings Wikipedia reports, dated"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "long-term evidence is thin",
+      "the brief isn't personal medical advice"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Was the yes/no question 'Does intermittent fasting really work better than regular dieting for weight loss?'. Rephrased as an overview request (same reason as debate-01)."
+    }
+  },
+  {
+    "id": "debate-03",
+    "category": "controversy",
+    "question": "Does raising the minimum wage cost jobs? Give me the main sides of the debate.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "the standard competitive-market prediction of job losses",
+      "the Card and Krueger (1994) New Jersey study and its influence",
+      "monopsony as a reason effects can be small or positive",
+      "later mixed findings and where economists' opinion stands now"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "effects depend on the size of the increase and local conditions; findings are mixed"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "debate-04",
+    "category": "controversy",
+    "question": "What are the arguments for and against rent control?",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "aims: affordability and stability for tenants",
+      "criticisms: reduced housing supply and quality, misallocation",
+      "empirical evidence (e.g. studies of San Francisco or other cities)",
+      "the broad economist consensus against strict rent control versus tenant-advocate views, and softer variants such as rent stabilisation"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "debate-05",
+    "category": "controversy",
+    "question": "Summarize the historians' debate over whether the atomic bombings of Hiroshima and Nagasaki were necessary to end World War II.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "the traditional view: the bombings avoided a costly invasion of Japan",
+      "revisionist views: Japan was near surrender, the Soviet declaration of war mattered as much or more, diplomacy toward the USSR",
+      "the moral and legal debate",
+      "that historians still disagree"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "this is a genuinely unresolved historical debate; the brief shouldn't declare a winner"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Was the yes/no question 'Were the atomic bombings of Hiroshima and Nagasaki necessary to end World War II?'. Rephrased as a request for the debate (same reason as debate-01)."
+    }
+  },
+  {
+    "id": "debate-06",
+    "category": "controversy",
+    "question": "How should Christopher Columbus be remembered? Summarize the debate over his legacy.",
+    "expected_mode": "brief",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "his 1492 voyage and its consequences (European colonisation, the Columbian exchange)",
+      "his treatment of the Taíno and other Indigenous people, and his governorship of Hispaniola",
+      "changing commemoration: Columbus Day versus Indigenous Peoples' Day, statue removals",
+      "his significance to Italian-American heritage"
+    ],
+    "must_not_include": [
+      "Columbus, Ohio",
+      "Chris Columbus (the film director)"
+    ],
+    "expected_limitations": [
+      "how he 'should' be remembered is a values question; the brief can lay out the positions, not settle it"
+    ],
+    "review": {
+      "status": "draft",
+      "note": ""
+    }
+  },
+  {
+    "id": "limits-01",
+    "category": "limits",
+    "question": "What is this lamp?",
+    "expected_mode": "answer",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "says plainly that it can't see an image and none was received",
+      "asks for a description (shape, material, markings, era) or points to what would help identify it",
+      "optionally, pointers to common lamp styles or makers the user could compare against"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "the tool can't view images; identification needs a description"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Expects a short answer (submit_answer): the question turns on an image, a definition, a value judgment, a forecast or a personal decision."
+    }
+  },
+  {
+    "id": "limits-02",
+    "category": "limits",
+    "question": "What's the best dress shape for me?",
+    "expected_mode": "answer",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "says there's no factual 'best': it depends on personal taste, body, occasion and comfort",
+      "what it can offer from Wikipedia: common dress silhouettes (e.g. A-line, sheath, empire waist) and what they're known for",
+      "notes that body-shape styling advice is convention, not fact"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "a personal, subjective question Wikipedia can't answer; styling rules are conventions"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Expects a short answer (submit_answer): the question turns on an image, a definition, a value judgment, a forecast or a personal decision."
+    }
+  },
+  {
+    "id": "limits-03",
+    "category": "limits",
+    "question": "Who is the best actor in history?",
+    "expected_mode": "answer",
+    "reader_level": null,
+    "pair": null,
+    "goal": null,
+    "time_sensitive": false,
+    "must_cover": [
+      "says 'best' needs a definition and there's no single factual answer",
+      "offers a few measurable definitions with facts for each (e.g. most acting Academy Awards: Katharine Hepburn with four; most Best Actor wins: Daniel Day-Lewis with three; critics' or industry polls)",
+      "states the limits of each definition (awards reflect voters, era and English-language bias; polls vary)"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "'best' is subjective; each proposed definition has limits that should be stated"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Expects a short answer (submit_answer): the question turns on an image, a definition, a value judgment, a forecast or a personal decision."
+    }
+  },
+  {
+    "id": "limits-04",
+    "category": "limits",
+    "question": "Will it rain in Tuscany on my wedding day next June 14?",
+    "expected_mode": "answer",
+    "reader_level": null,
+    "pair": null,
+    "goal": "Plan an outdoor wedding in Tuscany in June",
+    "time_sensitive": false,
+    "must_cover": [
+      "says it can't forecast a specific day months ahead",
+      "what it can offer: typical June climate for Tuscany or Florence (rainfall, rainy days, temperature) from Wikipedia",
+      "suggests checking a weather service closer to the date"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "no forecasts; climate averages only"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Expects a short answer (submit_answer): the question turns on an image, a definition, a value judgment, a forecast or a personal decision."
+    }
+  },
+  {
+    "id": "limits-05",
+    "category": "limits",
+    "question": "Should I quit my stable job to open a bakery?",
+    "expected_mode": "answer",
+    "reader_level": null,
+    "pair": null,
+    "goal": "Decide whether to leave a job to open a bakery",
+    "time_sensitive": false,
+    "must_cover": [
+      "says it's a personal decision it can't make for the user",
+      "relevant facts Wikipedia can offer (e.g. small-business survival rates, what running a bakery involves)",
+      "the factors worth weighing, without prescribing an answer"
+    ],
+    "must_not_include": [],
+    "expected_limitations": [
+      "a personal decision; general statistics may not fit the user's situation"
+    ],
+    "review": {
+      "status": "draft",
+      "note": "Expects a short answer (submit_answer): the question turns on an image, a definition, a value judgment, a forecast or a personal decision."
+    }
+  }
+]

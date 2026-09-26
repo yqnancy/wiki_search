@@ -1,0 +1,8 @@
+anthropic>=0.125
+requests
+python-dotenv
+ipykernel
+nbformat
+nbconvert
+matplotlib
+pandas
