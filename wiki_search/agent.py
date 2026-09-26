@@ -34,7 +34,10 @@ DEFAULT_MODEL = "claude-sonnet-4-6"
 DISAMBIGUATION_RANK_CUTOFF = 3
 MAX_SECTION_CHARS = 8000
 MAX_LEAD_CHARS = 4000
-MAX_DISAMBIGUATION_CHARS = 6000
+# Disambiguation pages are sent whole as a compact entry list; 6,000 characters used to cut off
+# entries on common pages (on 'Go', the programming language was past the cut).
+MAX_DISAMBIGUATION_CHARS = 20000
+DISAMBIGUATION_LINE_CHARS = 110
 MAX_SEE_ALSO_CHARS = 1500
 MAX_PARALLEL_TOOLS = 6
 # Research briefs are recommended to be about 300-500 words. Only one well over that (25% past
@@ -271,6 +274,8 @@ class _Run:
         rechecked = False  # a submission with citation warnings was sent back once
         promoted = False  # a submission with caveats buried in assumptions was sent back once
         sourced = False  # a brief whose selection rests on the agent's own judgment was sent back once
+        tabled = False  # a brief with a table that doesn't compare items was sent back once
+        completed = False  # a cut-off or incomplete submission was sent back once
         verified = False  # the claim check sent back unsupported claims once
         corrections = 0
         turns = 0
@@ -303,6 +308,17 @@ class _Run:
                            if b.type == "tool_use" and b.name in FINAL_TOOLS), None)
             if submit is not None:
                 problems = []
+                incomplete = _incomplete_submission(submit.name, submit.input, response.stop_reason)
+                if incomplete and not completed:
+                    # Never accept a submission cut off by the output limit, or one missing its
+                    # evidence: it would render as an answer with no reasoning or sources.
+                    completed = True
+                    self.qa.on_event(f"submission incomplete ({incomplete}); asking to resubmit")
+                    self.answer.trace.append({"type": "incomplete_submission", "issue": incomplete})
+                    problems.append(
+                        f"Your submission was incomplete: {incomplete}. Call {submit.name} again with every "
+                        "field filled in. Keep it concise: short statements, only the reasoning the answer "
+                        "needs, and no long deliberation before the call.")
                 words = report_word_count(submit.input) if submit.name == "submit_report" else 0
                 if words > REPORT_MAX_WORDS and not revised and corrections < MAX_CORRECTIONS:
                     revised = True
@@ -342,6 +358,16 @@ class _Run:
                             "you need a source). Leave only method notes and gaps in Wikipedia's coverage in "
                             "`assumptions`; an entry that is only a method note can stay. Don't fix this by "
                             "deleting the entry: if you picked the most likely reading, name the other one too.")
+                table_issue = _table_problem(submit.input) if submit.name == "submit_report" else None
+                if not tabled and table_issue:
+                    tabled = True
+                    self.qa.on_event(f"table doesn't compare items ({table_issue}); asking to drop or fix it")
+                    self.answer.trace.append({"type": "table_check", "issue": table_issue})
+                    problems.append(
+                        f"The table {table_issue}. Keep a table only if several items are each described on the "
+                        "same attributes and the reader would scan across rows to compare them; then give its "
+                        "`purpose` in one sentence and at least two attribute columns besides the item name. "
+                        "Otherwise set `table` to null: a table that restates the sections adds nothing to them.")
                 if not sourced and submit.name == "submit_report" and _unsourced_selection(submit.input):
                     sourced = True
                     self.qa.on_event("selection rests on own judgment; asking to look for a Wikipedia source")
@@ -418,7 +444,7 @@ class _Run:
         """Claims the cited sections don't back, by meaning (see verify.py)."""
         try:
             problems, usage = verify.check_claims(self.qa.client, self.qa.verifier_model, self.full_question, tool, data)
-        except anthropic.APIError as e:  # a safeguard: don't fail the answer, but don't hide the gap
+        except Exception as e:  # a safeguard (API error, malformed output): don't fail the answer, don't hide the gap
             self.answer.trace.append({"type": "error", "tool": "verify", "error": str(e)})
             self.verify_errors.append(f"Claim check didn't run, so claims weren't checked against their sources: {e}")
             return []
@@ -519,7 +545,7 @@ class _Run:
 
         if article.is_disambiguation:
             note = self._check_disambiguation(article.title, f"read_article({title})")
-            entries = "\n".join(s.text for s in article.sections)[:MAX_DISAMBIGUATION_CHARS]
+            entries = _disambiguation_entries(article)
             return f"{article.title} is a disambiguation page.\n{note}\n\nEntries:\n{entries}"
 
         if section and section.strip().lower() == INFOBOX.lower():
@@ -568,9 +594,7 @@ class _Run:
 
         self.qa.on_event(f"disambiguation check: {title}")
         page = wikipedia.get_article(title)
-        entries = "\n".join(
-            (f"{s.heading}:\n" if s.level > 1 else "") + s.text for s in (page.sections if page else [])
-        )[:MAX_DISAMBIGUATION_CHARS]
+        entries = _disambiguation_entries(page)
 
         response = self.qa.client.messages.create(
             model=self.qa.disambiguation_model,
@@ -618,6 +642,62 @@ def _has_infobox(title: str) -> bool:
         return bool(wikipedia.get_infobox(title))
     except Exception:  # an optional extra; don't fail the lead read over it
         return False
+
+
+def _incomplete_submission(tool: str, data: dict, stop_reason: str) -> Optional[str]:
+    """Why a final submission can't be accepted as-is, or None."""
+    if stop_reason == "max_tokens":
+        return "it was cut off by the output limit before it finished"
+    if tool == "submit_answer" and data.get("question_type") != "not-covered":
+        missing = [f for f in ("reasoning", "sources") if not data.get(f)]
+        if missing:
+            return f"{' and '.join(missing)} missing"
+    if tool == "submit_report":
+        missing = [f for f in ("overview", "sections", "sources") if not data.get(f)]
+        if missing:
+            return f"{', '.join(missing)} missing"
+    return None
+
+
+def _disambiguation_entries(page) -> str:
+    """A disambiguation page as a compact list: section headings and one line per entry, long
+    lines trimmed, "See also" dropped. Ends with a count if the list still overflows."""
+    if page is None:
+        return "(page not found)"
+    lines = []
+    for sec in page.sections:
+        if sec.heading.lower() in ("see also", "references", "external links"):
+            continue
+        if sec.level > 1:
+            lines.append(f"{sec.heading}:")
+        for line in sec.text.splitlines():
+            line = line.strip()
+            if line:
+                lines.append(line if len(line) <= DISAMBIGUATION_LINE_CHARS
+                             else line[:DISAMBIGUATION_LINE_CHARS].rsplit(" ", 1)[0] + " …")
+    out, used = [], 0
+    for i, line in enumerate(lines):
+        if used + len(line) + 1 > MAX_DISAMBIGUATION_CHARS:
+            out.append(f"[… {len(lines) - i} more lines not shown]")
+            break
+        out.append(line)
+        used += len(line) + 1
+    return "\n".join(out)
+
+
+def _table_problem(data: dict) -> Optional[str]:
+    """Why a brief's table isn't a real comparison, or None. A table needs a stated purpose,
+    at least two attribute columns besides the item column, and at least two rows."""
+    table = data.get("table")
+    if not isinstance(table, dict) or not table.get("rows"):
+        return None
+    if not str(table.get("purpose") or "").strip():
+        return "has no stated purpose (the comparison a reader makes across its rows)"
+    if len(table.get("columns") or []) < 3:
+        return "has fewer than two attribute columns besides the item name"
+    if len(table.get("rows") or []) < 2:
+        return "has fewer than two rows to compare"
+    return None
 
 
 def _unsourced_selection(data: dict) -> bool:

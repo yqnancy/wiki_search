@@ -47,13 +47,15 @@ SUBMIT_TOOL = {
             "answer": {
                 "type": "string",
                 "description": (
-                    "Only the answer itself, so a reader finds it at a glance: a name, number, date, "
-                    "place or yes/no, e.g. 'Jean Sibelius'. For claim checks, a gist of a few words "
-                    "to follow the verdict, e.g. 'it opened a decade later', without repeating the verdict "
-                    "(no 'True'/'False'). If the question's premise is false, the correction itself, "
-                    "e.g. 'No such treaty was signed'. If the answer depends on which reading or definition "
-                    "is meant, a short clause naming it and the main alternative, e.g. '2.1 million (city "
-                    "proper); 12.3 million for the metropolitan area'. No explanation or citations."
+                    "Only the bare answer, so a reader finds it at a glance: a name, number, date, place "
+                    "or yes/no, at most about 10 words, e.g. 'Jean Sibelius'. For claim checks, a gist of "
+                    "a few words to follow the verdict, e.g. 'it opened a decade later', without repeating "
+                    "the verdict (no 'True'/'False'). If the question's premise is false, the correction "
+                    "itself, e.g. 'No such treaty was signed'. If the answer depends on which reading or "
+                    "definition is meant, give the answer for the one you used here, e.g. '2.1 million', and "
+                    "state that reading and the main alternative (with its answer if it differs) in the "
+                    "first reasoning item. Extra facts, context and explanation also go in `reasoning`. "
+                    "No citations."
                 ),
             },
             "verdict": {
@@ -184,12 +186,19 @@ REPORT_TOOL = {
             },
             "table": {
                 "description": (
-                    "Comparison table, when the request compares several items along shared "
-                    "dimensions; null otherwise. Keep cells short."
+                    "Usually null. A table only when several items (options, types, positions) are each "
+                    "described on the same attributes and the reader would scan across rows to compare "
+                    "them. Not for eras, causes, steps or traits that are already the sections. Keep "
+                    "cells short."
                 ),
                 "anyOf": [{
                     "type": "object",
                     "properties": {
+                        "purpose": {
+                            "type": "string",
+                            "description": ("One sentence: the comparison the reader makes by scanning across "
+                                            "the rows, e.g. 'which option trades range for cost and safety'."),
+                        },
                         "columns": {"type": "array", "items": {"type": "string"}},
                         "rows": {
                             "type": "array",
@@ -204,7 +213,7 @@ REPORT_TOOL = {
                             },
                         },
                     },
-                    "required": ["columns", "rows"],
+                    "required": ["purpose", "columns", "rows"],
                     "additionalProperties": False,
                 }, {"type": "null"}],
             },

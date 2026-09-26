@@ -234,13 +234,17 @@ def main() -> None:
         (run_dir / "traces").mkdir(parents=True)
         qa = WikiQA(model=args.model)
         rows = []
-        for item in selected(run_items):
-            start = time.time()
-            a = qa.ask(item["question"])
-            print(f"  ran {item['id']} in {time.time() - start:.0f}s")
-            rows.append(row_from_answer(item, a))
-            (run_dir / "traces" / f"{item['id']}.json").write_text(json.dumps(a.trace, indent=2, ensure_ascii=False))
-        write_jsonl(run_dir / "answers.jsonl", rows)
+        # Each answer is appended as soon as its item finishes, so partial results can be read
+        # mid-run and survive a crash.
+        with open(run_dir / "answers.jsonl", "w") as out:
+            for item in selected(run_items):
+                start = time.time()
+                a = qa.ask(item["question"])
+                print(f"  ran {item['id']} in {time.time() - start:.0f}s", flush=True)
+                rows.append(row_from_answer(item, a))
+                out.write(json.dumps(rows[-1], ensure_ascii=False) + "\n")
+                out.flush()
+                (run_dir / "traces" / f"{item['id']}.json").write_text(json.dumps(a.trace, indent=2, ensure_ascii=False))
 
     rel = run_dir.relative_to(ROOT)
     pending = write_packets(items, rows, args.graders, run_dir, BATCH[args.judge])
