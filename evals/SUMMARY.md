@@ -488,6 +488,7 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
 | `evals/contamination.py` | Overlap check against prompts, tool descriptions and the dev set. |
 | `evals/run.py` | Runs WikiQA over items (`--repeats`, `--resume`, `--today`, `--model`, `--evals`, `--ids`). |
 | `evals/query_faithfulness.py` | Query-faithfulness metric for the ambiguity set (committed / first-narrowed searches), with per-pair meaning annotations. |
+| `evals/manual_grading/` | Hand-grading tools: `dump` (responses next to gold, or two runs side by side), `record` (taxonomy-checked grade lines), `to_judgments` (grades → `judgments.jsonl` in the judge's schema), with the grading rules in its README. |
 | `evals/judge.py` | LLM judge (Opus 5) producing taxonomy-labelled judgments. |
 | `evals/report.py` | Markdown report for a judged run. |
 | `evals/analysis.py` | DataFrame loaders and metrics for notebooks. |
