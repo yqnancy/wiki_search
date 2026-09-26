@@ -13,7 +13,8 @@ and produces a dict with a `score` in [0, 1] (None when it doesn't apply) plus d
                    limits communicated honestly (what can't be answered, thin sources)  (briefs)
     relevance      judged, per point (incl. further reading): essential / supporting /
                    marginal / off-topic; name collisions are off-topic
-    style          judged rubric: conciseness, clarity, fit to the reader's level
+    style          judged rubric: conciseness, clarity, table fit (a table only where a side-by-side
+                   comparison beats lists), fit to the reader's level
                    (item's reader_level, else the wording, else curious beginner-intermediate)
 
 Judged graders are split into a request (rubric + inputs + JSON schema) and a scorer that turns
@@ -38,6 +39,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from wiki_search import wikipedia  # noqa: E402
+from wiki_search.verify import cited_text  # noqa: E402
 from wiki_search.agent import MAX_LEAD_CHARS, MAX_SECTION_CHARS, REPORT_MAX_WORDS, REPORT_WORD_TARGET  # noqa: E402
 from wiki_search.render import VERDICTS  # noqa: E402
 
@@ -132,14 +134,8 @@ def claims(row: dict) -> list[dict]:
 
 
 def source_text(title: str, section: str) -> str:
-    """The cited section's text, truncated as the agent saw it."""
-    article = wikipedia.get_article(title)
-    if article is None:
-        return "(article not found)"
-    if section in ("(lead)", "", None):
-        return article.lead[:MAX_LEAD_CHARS]
-    found = article.find_section(section)
-    return found[1][:MAX_SECTION_CHARS] if found else "(section not found)"
+    """The cited section's text, truncated as the agent saw it (lead, infobox or section)."""
+    return cited_text(title, section)
 
 
 def _prose(row: dict) -> str:
@@ -258,7 +254,6 @@ def grade_format(item: dict, row: dict) -> dict:
 BRIEF_MAX_WORDS = REPORT_MAX_WORDS
 FURTHER_READING_RANGE = (3, 6)
 FURTHER_READING_WHY_MAX_WORDS = 20
-_COMPARISON_REQUEST = re.compile(r"\b(compare|comparison|comparing|versus|vs\.?|differences?|contrast)\b", re.I)
 _JUDGMENT_WORDS = ("judgment", "judgement", "my own", "not ranked", "doesn't rank", "does not rank")
 
 
@@ -305,8 +300,6 @@ def grade_brief_format(item: dict, row: dict) -> dict:
         f"further-reading notes are short ({long_whys} over {FURTHER_READING_WHY_MAX_WORDS} words)": long_whys == 0,
         "no citation warnings": not row.get("warnings"),
     }
-    if _COMPARISON_REQUEST.search(row.get("question", "")):
-        checks["comparison table present"] = bool(table.get("columns") and table.get("rows"))
     failures = [k for k, ok in checks.items() if not ok]
     return {"score": round(sum(checks.values()) / len(checks), 3), "words": words, "failures": failures}
 
@@ -564,6 +557,7 @@ Reader level. If the reviewer gives the reader's level, use it. Otherwise infer 
 Score each dimension from 1 (poor) to 5 (excellent):
 - conciseness: no padding, repetition or restating within the prose sections or within the table (a fact repeated in a later section, the same information in two table columns, an overview that previews every section in detail). Some overlap between the table and the sections is acceptable; don't penalise it on its own. The recommended length is roughly 300-500 words of prose plus any table; judge repetition and padding, not a modest overage in words.
 - clarity: easy to follow; well organised; sentences are direct; the main points are easy to find.
+- table_fit: whether the brief uses a table exactly when one helps. A table helps when seeing several items side by side across the same dimensions (options, types, positions, each described on the same few attributes) is clearer than lists, whether or not the user said "compare". Score 5 when a table is present and makes the comparison easier to scan, or when there's no table and none would help. Score 1-2 when a table only restates the sections or lists items without comparable attributes (it adds nothing lists don't), or when a clear side-by-side comparison is buried in lists with no table. Explain a low score in the issues.
 - level_fit: vocabulary, depth and pace match the reader level. For a beginner: plain words, specialist terms explained or avoided, concrete examples, nothing condescending. For an expert: precise technical terms used without explaining basics they already know, and enough depth (mechanisms, specifics, caveats) to be worth their time; a beginner-level brief for an expert scores low. For the default reader: explain specialist terms briefly, don't explain everyday ones.
 
 List the most important concrete issues (quote the offending text briefly), at most five."""
@@ -572,6 +566,7 @@ STYLE_SCHEMA = _obj({
     "reader_level": _enum("beginner", "intermediate", "expert"),
     "level_basis": _enum("reviewer", "wording", "default"),
     "conciseness": {"type": "integer"}, "clarity": {"type": "integer"}, "level_fit": {"type": "integer"},
+    "table_fit": {"type": "integer"},
     "issues": {"type": "array", "items": {"type": "string"}},
 })
 
@@ -591,8 +586,8 @@ def request_style(item: dict, row: dict) -> Union[dict, list[JudgeRequest]]:
 
 def score_style(item: dict, row: dict, verdicts: list[dict]) -> dict:
     v = verdicts[0]
-    dims = {k: max(1, min(5, int(v[k]))) for k in ("conciseness", "clarity", "level_fit")}
-    return {"score": round((sum(dims.values()) / 3 - 1) / 4, 3),  # 1..5 -> 0..1
+    dims = {k: max(1, min(5, int(v[k]))) for k in ("conciseness", "clarity", "level_fit", "table_fit")}
+    return {"score": round((sum(dims.values()) / len(dims) - 1) / 4, 3),  # 1..5 -> 0..1
             **dims, "reader_level": v["reader_level"], "level_basis": v["level_basis"],
             "words": len(_prose(row).split()), "issues": v["issues"]}
 

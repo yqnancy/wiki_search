@@ -1,6 +1,13 @@
 # Evals
 
-Five eval sets for `WikiQA`, one runner, and an LLM judge that labels every response with a **behavior**, a **verdict**, and a **failure mode** from a fixed taxonomy.
+This folder holds two separate evals, one per use case. They share infrastructure (the Wikipedia client and cache, `WikiQA`) but not eval sets:
+
+- **Fact verification** (this README): five eval sets, `run.py`, and an LLM judge (`judge.py`) that labels every response with a **behavior**, a **verdict**, and a **failure mode** from a fixed taxonomy.
+- **Research briefs** (the research-starting-point use case): `research_set.json`, `run_eval.py` and `graders.py`, with judging done in the Claude Code session. See "Research-brief eval: how judging works" in the root `README.md`.
+
+**Results and history.** `latest_results.ipynb` has the latest runs of both evals (for fact verification, the v7 ambiguity round: shorter answer lines, 45/50 + 1 partial vs v4's 48/50, with the follow-up fixes). `results.ipynb` has the last full fact-verification suite (v3, 234/250). `SUMMARY.md` explains how both evals were built, what they found and what changed in the system (§1-9 fact verification, §10 research briefs).
+
+The rest of this README covers the fact-verification eval.
 
 | Set | File | Items | What it measures |
 |---|---|---|---|
@@ -10,7 +17,7 @@ Five eval sets for `WikiQA`, one runner, and an LLM judge that labels every resp
 | Aliases (v2) | `data/aliases.jsonl` | 25 pairs | Names that keyword search handles badly: no-redirect nicknames, misspellings, recent renames, local-language names, informal product names, time-correct historical names |
 | False premise (v2) | `data/false_premise.jsonl` | 25 pairs | Subtle false premises (plausible wrong details, partially true, stale since 2025) (18 pairs) and not-on-Wikipedia questions where a nearby figure tempts fabrication (7 pairs) |
 
-`eval_set.json` is the original 18-question smoke set used by `demo.ipynb`. Earlier versions of every set are in `data/archive/` (v1 of each; v2 of general). Time-sensitive items carry `as_of` and must be re-verified before each run (`verify.py`).
+`eval_set.json` is the original 18-question smoke set, run by `smoke_eval.ipynb`. Earlier versions of every set are in `data/archive/` (v1 of each; v2 of general). Time-sensitive items carry `as_of` and must be re-verified before each run (`verify.py`).
 
 ## Pairs
 

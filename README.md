@@ -6,13 +6,16 @@ Answers questions, checks claims and writes research briefs using only Wikipedia
 
 ```
 question ─► Claude (Sonnet 4.6, adaptive thinking)
-              │ plans: fact / claim check / multi-hop; writes keyword queries
+              │ plans: fact / claim check / multi-hop / research request; writes keyword queries
               ├─► search_wikipedia(query)       top-N results + intros, disambiguation pages flagged
-              │     └─ disambiguation page in top 3? ─► Sonnet 4.6 sub-call:
-              │           could the question mean >1 entry?  yes → stop, ask the user
-              │                                               no  → tell the agent which meaning
-              ├─► read_article(title, section?)  lead + table of contents, or one section (or the "Infobox")
-              └─► submit_answer(answer, verdict, reasoning[], sources[]) ─► rendered by code
+              │     └─ disambiguation page in top 3? ─► Sonnet 4.6 sub-call (sees the question and the
+              │           whole page as a compact entry list): could the question mean >1 entry?
+              │             yes → stop, ask the user      no → tell the agent which meaning
+              ├─► read_article(title, section?)  lead + table of contents + "See also", one section, or "Infobox"
+              ├─► plan_research(...)             research requests only: raises the reading budget
+              ├─► submit_answer(answer, verdict, reasoning[], sources[])      ─► checked, rendered by code
+              └─► submit_report(overview, sections, table?, further reading…) ─► checked (incl. each claim
+                                                                                 against its sources), rendered
 ```
 
 | File | Purpose |
@@ -21,18 +24,22 @@ question ─► Claude (Sonnet 4.6, adaptive thinking)
 | `wiki_search/agent.py` | `WikiQA`: agent loop, tools, disambiguation sub-call, budgets |
 | `wiki_search/prompts.py` | System prompt and disambiguation prompt |
 | `wiki_search/render.py` | `submit_answer` and `submit_report` schemas; renders answers and briefs to Markdown, merges duplicate sources, checks citations |
+| `wiki_search/verify.py` | Claim check for research briefs: each cited claim against the text of its sources, by meaning |
 | `wiki_search/__main__.py` | CLI |
-| `evals/research_set.json` | Research requests for the research-brief eval, each with a `must_cover` topic list |
-| `evals/eval_set.json` | 18 fact-check questions (facts, claims, multi-hop, ambiguous, out-of-scope), each with gradeable expectations (`expected_answer`, `acceptable_answers`, `expected_verdict`, `should_clarify`) and quoted Wikipedia evidence pinned to a revision |
-| `evals/verify_evidence.py` | Re-checks every evidence quote against current Wikipedia; `--write` pins revision IDs |
-| `demo.ipynb` | Runs a single question and the eval set, and renders answers with tool traces |
+| `demo.ipynb` | Quick start: setup steps, then a fact question, a multi-hop question, a research brief, and when the tool does and doesn't ask about an ambiguous name |
+| `evals/` | Two separate evals, one per use case (see "Evals" below and `evals/README.md`) |
+| `evals/latest_results.ipynb` | The latest runs of both evals; `evals/results.ipynb` has the last full fact-verification suite (v3) |
+| `evals/SUMMARY.md` | How both evals were built, what they found, what changed in the system, and what's open |
 
 ## Two modes, chosen by the agent
 
-- **Answers** (facts, claim checks, multi-hop): end with `submit_answer`, which gives a one-line answer or verdict, cited reasoning, and sources.
+- **Answers** (facts, claim checks, multi-hop): end with `submit_answer`: a short answer line (about 10 words; the reading or scope it assumes goes in the first reasoning item), a verdict for claim checks (Supported, Contradicted, Partially supported, Disputed, Not addressed by Wikipedia), cited reasoning, and sources. Questions that turn on a definition, a value judgment, a forecast, a personal decision or an image get a short answer that says so and offers what Wikipedia can.
 - **Research briefs** (overviews, histories, comparisons): the agent calls `plan_research`, which raises its budget from 10 articles / 20 tool calls to `research_max_articles` / `research_max_tool_calls` (25 / 40). It reads hub articles, sections and "See also" links, running independent calls in parallel, then calls `submit_report`: an overview, sections, an optional comparison table, how items were chosen (`selection_basis`), further reading, and sources. Briefs are recommended to be about 300–500 words; only one well over that (above 625 words) is sent back once to shorten.
 - **Wikipedia before the model's own knowledge.** A brief whose selection ("the five most common ...") cites nothing is sent back once to look for a Wikipedia list or hub section to base it on; an imperfect Wikipedia source is preferred to the model's own judgment.
 - **Claims checked against their sources by meaning** (`wiki_search/verify.py`). Before a brief is accepted, a separate model call (Sonnet 4.6 by default) compares every cited claim with the full text of the sections it cites, as the agent read them, and flags claims that are unsupported, contradicted or distorted, e.g. "height is normally distributed" citing a section that says height is log-normal. Flagged claims go back to the agent once, with what the source actually says. If the revised brief still has unsupported claims, they're listed in the brief's warnings; if the check can't run, that's a warning too. `--verify-claims all` extends the check to fact-check answers; `off` disables it.
+- **Tables only for real comparisons.** A brief's table needs a stated `purpose` (the comparison a reader makes across its rows) and at least two attribute columns; otherwise it's sent back, and the prompt defaults to no table.
+- **Prompt rules for briefs:** match the reader's level (expert, beginner, or by default a curious beginner-to-intermediate reader); for a stated goal, end with a short section of cited facts relevant to it; lay out contested questions without false balance or a declared winner; say plainly what Wikipedia can't answer; leave out namesakes.
+- **Incomplete submissions are never accepted.** An answer or brief cut off by the output limit, or missing its reasoning or sources, is sent back once to resubmit.
 
 ## Setup
 
@@ -40,6 +47,8 @@ question ─► Claude (Sonnet 4.6, adaptive thinking)
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env
+echo 'WIKI_USER_AGENT=wiki-search/0.1 (your-contact@example.com)' >> .env   # see "Wikipedia rate limits"
+.venv/bin/python -m ipykernel install --user --name wiki-search --display-name "wiki_search (.venv)"   # for the notebooks
 ```
 
 ## Usage
@@ -66,15 +75,26 @@ print(answer.text)
 
 The agent is told today's date (for ages and "how long ago" questions). Pass `WikiQA(today=datetime.date(2026, 1, 15))` to pin it, e.g. for reproducible evals.
 
-## Eval set: how expected answers are made
+## Evals
+
+There are two evals, one per use case. They share infrastructure (the Wikipedia client and cache, `WikiQA`) but not items:
+
+| Use case | Items | Run and grade | Details |
+|---|---|---|---|
+| Fact verification | `evals/data/*.jsonl`: 250 items in 5 sets (general, and ambiguity, scope, aliases and false premise as trap/control pairs) | `evals/run.py`, then hand-grading in the Claude Code session (`evals/manual_grading/`) or the API judge `evals/judge.py` | `evals/README.md`, `evals/SUMMARY.md` §1-9 |
+| Research briefs | `evals/research_set.json`: 27 requests | `evals/run_eval.py`, judged in the Claude Code session | Below, and `evals/SUMMARY.md` §10 |
+
+Latest results for both are in `evals/latest_results.ipynb`. `evals/eval_set.json` is an older 18-question fact-check smoke set, run by `evals/smoke_eval.ipynb`.
+
+### Fact-check smoke set: how expected answers are made
 
 Expected answers come from Wikipedia, not from a model's memory. Each item quotes the sentence that supports its answer, naming the article and section, and `evals/verify_evidence.py` confirms that every quote appears verbatim in that section and records the revision ID. If an article changes, the script reports the quote as MISSING. Items whose expected outcome is a judgment call rather than a fact (a verdict label, whether to ask for clarification) have `review.status: "needs_decision"` until a person decides; the decision is then recorded in `review.note` with status `"decided"`. `also_accept` describes an alternative behaviour that also passes.
 
-## Research-brief eval: how judging works
+### Research-brief eval: how judging works
 
 The research-starting-point use case has its own eval, separate from the fact-verification eval (`evals/run.py`, `evals/judge.py`, `evals/data/`). The two share infrastructure (the Wikipedia client and cache, `WikiQA`), not eval sets.
 
-### Inputs
+#### Inputs
 `evals/research_set.json` holds research requests, grouped by the failure mode they probe:
 
 | Category | Items | Probes |
@@ -87,28 +107,28 @@ The research-starting-point use case has its own eval, separate from the fact-ve
 
 Each item has `expected_mode` (`brief`, or `answer` where a short answer is right), `must_cover` (topics a good brief must include), `time_sensitive` (the brief must give the latest information, dated, and cite recently updated pages), and where relevant a `goal`, a `reader_level` (`beginner` / `expert`; empty means the default curious beginner-to-intermediate reader), a `pair` (its other-level twin), `must_not_include` (namesakes that would be off-topic) and `expected_limitations` (what an honest brief must say it can't answer). A person reviews each item before it's relied on (`review.status`). There are no expected answers: many different briefs can be good, so briefs are judged against rubrics instead.
 
-### Graders
-A brief gets five scores, each from 0 to 1:
+#### Graders
+A brief gets up to six scores, each from 0 to 1:
 
 | Grader | How | What it checks | How it scores |
 |---|---|---|---|
-| `brief_format` | code | Right mode for the item (`expected_mode`: a brief, or a short answer for questions that turn on a definition, value judgment, forecast, image or personal decision); prose (overview + sections) not far over the recommended ~500 words: it fails only above 625 (25% over), the same point at which the agent sends a brief back; every overview and section point cited; "How these were chosen" filled in, and cited or labelled as the agent's own judgment; 3–6 further-reading entries with short notes (20 words or fewer); a comparison table when the request compares ("compare", "versus", ...); no citation warnings | share of checks passed |
+| `brief_format` | code | Right mode for the item (`expected_mode`: a brief, or a short answer for questions that turn on a definition, value judgment, forecast, image or personal decision); prose (overview + sections) not far over the recommended ~500 words: it fails only above 625 (25% over), the same point at which the agent sends a brief back; every overview and section point cited; "How these were chosen" filled in, and cited or labelled as the agent's own judgment; 3–6 further-reading entries with short notes (20 words or fewer); no citation warnings | share of checks passed |
 | `freshness` | code | Time-sensitive items only: every cited page had been edited within a year of the run, judged on the exact revision the agent read (recorded at run time). A recent edit is a proxy, not proof: it may be minor, and a stale section inside a busy page isn't detected, so `completeness` also checks the brief gives the latest information, dated | share of cited pages updated within a year |
 | `citations` | judged, per claim | Each claim (overview and section points, table rows, a cited selection basis) against the full text of the sections it cites: **support** (full / partial / none), **faithful** (no distortion, overstatement, false precision or invented ranking) and **relevance** (the section is where the fact belongs, a better section the agent read exists, or it's tangential) | mean of support (1 / 0.5 / 0), faithful (1 / 0) and relevance (1 / 0.5 / 0) |
 | `completeness` | judged | The key topics the request asks for and every `must_cover` item; for a stated **goal**, whether the brief helps the user go further toward it (concrete next steps, not just a generic reading list); and **limits and gaps** communicated clearly and honestly: what can't be answered and why (an image, a forecast, a value judgment, an undefined "best"), where sources are thin, while still offering what can be answered (e.g. candidate definitions of "best", each with its limits). Overclaiming a contested or subjective matter counts as missing | full 1, partial 0.5, missing 0, averaged; goal and limitation parts are also reported separately |
 | `relevance` | judged, per point | Each point, including further-reading entries, labelled essential, supporting, marginal or off-topic. A **name collision** (a different thing sharing the topic's name, like the Kyoto Protocol in a history of Kyoto) is off-topic; the item's `must_not_include` namesakes are passed to the judge. "How these were chosen" and "Assumptions & gaps" count as supporting unless padded | essential and supporting 1, marginal 0.5, off-topic 0 |
-| `style` | judged | Conciseness (no repetition within the sections or within the table; some overlap between the two is fine), clarity, and **level fit**: depth and terminology matched to the reader, taken from the item's `reader_level`, else the user's wording, else a curious beginner-to-intermediate reader (not a deep expert, not someone with zero background). Each 1–5. The brief's fixed sections are expected; only bloat within them is penalised | mean of the three, rescaled from 1–5 to 0–1 |
+| `style` | judged | Conciseness (no repetition within the sections or within the table; some overlap between the two is fine), clarity, **table fit** (a table is present exactly when seeing several items side by side across the same dimensions is clearer than lists, judged on the content, not on whether the user said "compare"; a table that just restates the sections scores low), and **level fit**: depth and terminology matched to the reader, taken from the item's `reader_level`, else the user's wording, else a curious beginner-to-intermediate reader (not a deep expert, not someone with zero background). Each 1–5. The brief's fixed sections are expected; only bloat within them is penalised | mean of the four, rescaled from 1–5 to 0–1 |
 
 The judge sees exactly what the agent saw: cited sections are fetched from the same Wikipedia cache and truncated to the same length. Every judged verdict must name the problem (e.g. "the cited section says height is log-normal, not normal"), so a score can always be traced to specific text.
 
 `correctness` and `format` in `evals/graders.py` are fact-check graders (an expected answer, the one-line answer layout). They don't apply to briefs and aren't run here.
 
-### Who judges
+#### Who judges
 Judging happens **in the Claude Code session** by default, not through the API. The runner turns each judgment into a Markdown **grading packet**, holding the rubric, the inputs (request, brief, cited source text) and a JSON schema for the verdict, and writes it to `evals/runs/<run>/grading/<id>/<grader>.md`. Claude reads each packet and writes its verdict next to it as `<grader>.json`. `--collect` then checks every verdict against its schema, computes the scores, and writes `results.jsonl` and `summary.md`. Grades record which model judged them; in-session grades come from whichever model the session runs.
 
 For unattended runs, `--judge api` fills the same packets through the Anthropic API (Claude Opus 5, structured outputs). Safety classifiers occasionally decline benign grading requests (in the pilot, "bio" false positives on answers about mercury and light bulbs), so a declined request is retried on Claude Opus 4.8 and then with a short framing note. If every attempt is declined, the grade is recorded as an error, never as a zero.
 
-### Running it
+#### Running it
 ```bash
 .venv/bin/python evals/run_eval.py                              # run every request, write grading packets
 .venv/bin/python evals/run_eval.py --ids research-02 --graders brief_format style
@@ -125,7 +145,7 @@ Wikimedia throttles bursts with HTTP 429. The client:
 
 - **caches responses on disk** in `.cache/wikipedia.sqlite`. Reruns make few requests, and every run (e.g. comparing backbone models) reads identical article text. Use `--cache refresh` to refetch and overwrite, or `--cache off` to bypass. In Python, set `wiki_search.wikipedia.CACHE_MODE`; the environment variable is `WIKI_CACHE`.
 - **searches in one request** (`generator=search` returns ranked results together with intros and disambiguation flags). Short queries of 3 words or fewer make one more request to look up `"<query> (disambiguation)"` directly.
-- **sends requests one at a time**, spaced out (`WIKI_MIN_REQUEST_INTERVAL`, default 0.2s), and retries 429s using `Retry-After`. The demo notebook runs the eval set sequentially for the same reason.
+- **sends requests one at a time**, spaced out (`WIKI_MIN_REQUEST_INTERVAL`, default 0.2s), and retries 429s using `Retry-After`. The eval runners and `evals/smoke_eval.ipynb` run items sequentially or with small, paced concurrency for the same reason.
 
 Identify yourself as Wikimedia's [User-Agent policy](https://meta.wikimedia.org/wiki/User-Agent_policy) asks by adding this to `.env`:
 

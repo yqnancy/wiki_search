@@ -9,6 +9,7 @@ that says otherwise.
 
 from __future__ import annotations
 
+import json
 from typing import Optional
 
 from . import wikipedia
@@ -25,7 +26,12 @@ Flag a claim when, judged by meaning against the cited text only (not your own k
 - "unsupported": a factual assertion in it isn't stated or directly implied by the cited text, e.g. examples, dates, names or attributions the section doesn't give;
 - "contradicted": the cited text says something different, e.g. the claim says a bridge is the longest in Europe today but the section says it was the longest when it opened;
 - "distorted": it overstates or changes what the source says: "the most used" where the source says "often used", a specific year where the source says "in the early 1990s", a ranking or judgment the source doesn't make, a condition the source attaches that the claim drops.
-Paraphrase, simple arithmetic from stated facts, and synthesis of facts that each appear in one of the cited sections are fine. Don't flag style, relevance, or claims that are merely incomplete.
+Don't flag any of these; they are fine:
+- rounding or approximation that keeps the meaning ("about 12 million" for 12,106,000; "40%" for 40.2%);
+- paraphrase, or leaving out a qualifier or detail, when the claim still says what the source says ("some regions" for "some coastal regions");
+- simple arithmetic from stated facts, and synthesis of facts that each appear in one of the cited sections;
+- style, relevance, or claims that are merely incomplete.
+Flag only what would mislead a reader who trusted the citation: a fact, number, name, date or attribution the cited text doesn't give, or a change in meaning. When unsure whether a difference matters, don't flag it.
 
 For each flagged claim, quote or closely paraphrase what the cited text actually says in `source_says` (or say it's silent), and in `fix` say how to repair it: correct the wording to match the source, cite a different section you can see supports it, or drop the unsupported part. Record your findings with `record_claim_checks`; an empty list means every claim is backed."""
 
@@ -120,12 +126,22 @@ def check_claims(client, model: str, question: str, tool: str, data: dict) -> tu
             f"<claims>\n{listing}\n</claims>")}],
     )
     result = next((b.input for b in response.content if b.type == "tool_use"), {"problems": []})
+    raw = result.get("problems") if isinstance(result, dict) else None
+    if isinstance(raw, str):  # occasionally the list arrives JSON-encoded as a string
+        try:
+            raw = json.loads(raw)
+        except json.JSONDecodeError:
+            raw = []
     by_id = {c["id"]: c for c in items}
     problems = []
-    for p in result.get("problems") or []:
+    for p in raw or []:
+        if not isinstance(p, dict):  # skip malformed entries rather than fail the answer
+            continue
         claim = by_id.get(p.get("claim_id"))
         if claim:
-            problems.append({**p, "claim": claim["text"], "where": claim["where"]})
+            problems.append({"kind": p.get("kind", "unsupported"), "source_says": p.get("source_says", ""),
+                             "fix": p.get("fix", ""), "claim_id": claim["id"], "claim": claim["text"],
+                             "where": claim["where"]})
     return problems, response.usage
 
 

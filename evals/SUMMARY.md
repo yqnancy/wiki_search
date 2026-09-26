@@ -1,6 +1,6 @@
 # WikiQA eval effort: summary
 
-This document summarizes how we built, checked and used an eval suite for `wiki_search` (WikiQA), a question-answering agent that answers only from English Wikipedia. It covers the design of the eval sets, the failure modes they target, what they caught in the system, the fixes made in response, and what is still open.
+This document summarizes how we built, checked and used an eval suite for `wiki_search` (WikiQA), a question-answering agent that answers only from English Wikipedia. It covers the design of the eval sets, the failure modes they target, what they caught in the system, the fixes made in response, and what is still open. Sections 1-9 cover fact verification; section 10 covers the separate eval for the research-brief (research-starting-point) use case.
 
 ## 1. Goal and approach
 
@@ -291,7 +291,7 @@ Smoke tests (5 live questions):
   - `section_text()` fetches infobox text for "§ Infobox" citations;
   - judge token usage recorded; `--tag` for re-grading passes.
 - **`report.py`, `analysis.py`:** pass rates with Wilson CIs, pair metrics, slices by subtype and category, behavior matrices, failure-mode tables, cost/latency, run-to-run stability and paired bootstrap helpers. Both handle single-run and repeated-run folders, and can load archived item files for older runs.
-- **Notebook generators:** `build_notebook.py` → `analysis.ipynb` (dataset, contamination, variance, model comparison); `build_results_notebook.py` → `results.ipynb` (latest results up front, earlier runs in appendices).
+- **Notebook generators:** `build_results_notebook.py` → `results.ipynb` (the v3 full-suite results, earlier runs in appendices); `build_latest_results.py` → `latest_results.ipynb` (the latest runs of both evals, §8.4 and §10). The early Sonnet vs Haiku `analysis.ipynb` and its generator were removed on 2026-09-26: they used the v1-era sets and partial data.
 
 ## 7. Infrastructure lessons
 
@@ -426,7 +426,7 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
 
 ### 8.3 Remaining issues (improvements stopped here)
 
-**Current system state:** v4 (caveat retry + readings step, original rule 2), plus the question-only disambiguation check, the `selection_basis` crash fix, and the other session's prompt edits. This exact combination has not been run. Re-run the full suite once before relying on the v3/v4 numbers for it.
+**Current system state:** v4 (caveat retry + readings step, original rule 2), plus the question-only disambiguation check, the `selection_basis` crash fix, and the research-brief session's prompt edits, then the changes in §8.4 (short answer line, whole-page disambiguation input, readings rule, incomplete-submission guard). Only the ambiguity set has been run with it. Re-run the full suite once before relying on the v3/v4 numbers for it.
 
 **System:**
 1. **The disambiguation check's calibration** is now the main limit on ambiguity handling. It resolves weak-context terms on priors (Inter, Go, Macedonia in earlier runs, the Masters without the pre-check). With the pre-check it over-asks on controls whose clue needs a small inference ("early access", "Arrowhead", "late March").
@@ -444,6 +444,28 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
 3. **Tuned and scored on the same 25 pairs.** The caveat detector, the readings prompt and the pre-check extractor were all developed on these pairs. New weak-context pairs, or a held-out split, are needed before trusting any gain.
 4. **The query-faithfulness metric** needs per-pair annotation and covers only the ambiguity set. It is a process metric: pass rate stays the outcome that counts.
 5. **Grading** is by one grader (Claude in this session). It was not calibrated against human labels beyond the 10-item review.
+
+### 8.4 Short answer line and follow-up fixes (v7, 2026-09-26, research-brief session)
+
+This round was done from the research-brief session after the fact-check session ended; results are in `evals/latest_results.ipynb`, section 2.
+
+**Why.** Answer lines had grown over this effort's runs: median 6 words (v2), 9 (v3), 17-18 (v4), 18-23 (v5/v6). The growth came from the ambiguity, scope and false-premise fixes, which moved readings, scopes and corrections into the answer line. The strict footnote rule only requires them in the answer *or the reasoning*, so the answer line can be short.
+
+**Change (v7, `evals/runs/suite_v7_short_answer/`, graded):** only the `answer` field's description in `render.py`: the bare answer, about 10 words at most; the reading or scope used, the main alternative and any extra facts go in the first reasoning item.
+
+**Result: 45/50 + 1 partial, against v4's 48/50; answer lines roughly halved (median 17 to 9 words, over-12-word answers 60% to 34%).**
+- amb-01t (Inter): San Siro only, Inter Miami never named. The only miss that plausibly traces to the shorter answer.
+- amb-11t (Go): language only. The disambiguation check resolved "Go" on the question alone; in v4 it also saw the agent's query.
+- amb-18c (Panthers, late March): asked unnecessarily, after a bare-name search surfaced the disambiguation page (v4 searched the teams directly).
+- amb-23t (Super League): answered rugby league, only noting other leagues exist (partial).
+- amb-22t (Masters) now asks (was the v4 miss); amb-09t (PE) still fails.
+
+**Follow-up fixes (targeted re-runs):**
+1. **Disambiguation page truncation** (`suite_v7b_disamb_fix`). The check got the first 6,000 characters of the page. On "Go" (8,780) that cut off "Go (programming language)"; Mercury, Springfield, Panther and Master also lost entries. It now gets a compact whole-page list (one line per entry, "See also" dropped, 20,000-character cap with a count if exceeded). 6/6 long-page items passed, including amb-18c. Run directly, the check still resolves amb-11t to the language: its calibration, not truncation, decides that item. The amb-11t rubric was kept (the user judged it genuinely ambiguous).
+2. **Readings rule aligned with the short answer line** (`suite_v7c_readings`, 14 multi-reading items): "Depends which Portland: see below", one reasoning item per reading. Answer lines shortened on 7 of 12 answered items but mostly stayed at 13-28 words: the model keeps listing each reading's answer in the headline.
+3. **Truncated submissions were accepted** (found on amb-03t in v7c): a `submit_answer` call cut off by the 16,000-token output limit rendered as an answer line with no reasoning and no sources. `agent.py` now never accepts a submission whose response hit `max_tokens`, or that is missing reasoning or sources (overview, sections or sources for a brief); it is sent back once. `suite_v7d_complete` shows amb-03t complete again (though covering 2 of the 3 Rangers teams).
+
+**What this does and doesn't show.** Items flip between runs with identical code (amb-03t, amb-11t), and no configuration has repeats, so the v4-v7 difference (3 items on 50) is within plausible noise. Deferred by the user: code-enforcing answer length (send back answer lines over ~15 words) and 3 repeats of the ambiguity set to measure noise.
 
 ## 9. Open questions and next steps
 
@@ -472,8 +494,43 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
   | False premise | fp-19t, fp-21t, fp-23t | Absence confirmed only on the main articles and top search results. |
   | False premise | fp-25t | The first Vuelta's prize premise is plausible but not stated on Wikipedia. |
 
-- **`evals/graders.py` infobox gap.** This older grader module (not written in this effort) looks up cited sections with `find_section()`, so "§ Infobox" citations come back as "(section not found)". It needs the same `get_infobox` branch as `judge.py`.
-- **`submit_report` is not schema-enforced.** It relies on defensive rendering. If `submit_answer`'s schema grows, it could also hit the grammar-size limit.
+- **`evals/graders.py` infobox gap: fixed 2026-09-26.** The research-brief graders now read cited sections through `wiki_search/verify.cited_text`, which handles "§ Infobox".
+- **`submit_report` is not schema-enforced.** It relies on defensive rendering, plus (since §8.4) a guard that sends back cut-off or incomplete submissions. If `submit_answer`'s schema grows, it could also hit the grammar-size limit.
+
+## 10. Research-brief eval (the research-starting-point use case)
+
+A separate eval for `submit_report` briefs: overviews, histories and comparisons meant as a starting point. It shares infrastructure with the fact-verification eval but not items; the two are deliberately kept apart.
+
+### 10.1 Design
+
+- **Items** (`evals/research_set.json`, 27): 2 general briefs; 6 **goal** items (a trip, a report, a purchase, a debate, a new dog: the brief should help the user go further, and several topics have namesakes that must stay out: Kyoto Protocol, Monty Python, Greyhound Lines); 8 **reader-level** items (4 topics asked twice, beginner and expert); 6 **controversy** items (nutrition science, economic policy, disputed history); 5 **limits** items that Wikipedia can't fully answer (an image never sent, a taste question, an undefined "best", a forecast, a life decision). Fields: `expected_mode` (brief, or a short answer for the limits items), `must_cover`, `reader_level`, `pair`, `goal`, `time_sensitive` (8 items), `must_not_include`, `expected_limitations`. The 25 new items are drafts pending review; the 2 originals are approved.
+- **Graders** (`evals/graders.py`): code-graded `brief_format` (length not far over the ~500-word recommendation, every point cited, selection basis sourced or labelled as judgment, further reading, right mode, no citation warnings) and `freshness` (time-sensitive items: every cited page edited within a year of the run, on the revision the agent read); judged `citations` (per claim: support, faithfulness, whether the cited section is the best one the agent read), `completeness` (requested and must-cover topics, a goal section, limits stated honestly), `relevance` (per point including further reading; name collisions are off-topic) and `style` (conciseness, clarity, table fit, fit to the reader's level; default reader curious beginner-to-intermediate).
+- **Judging in the Claude Code session.** `run_eval.py` writes each judgment as a Markdown packet (rubric, inputs, JSON schema); Claude writes the verdict next to it; `--collect` validates and scores. `--judge api` (Opus 5, with retries for false-positive safety declines) is available for unattended runs. The pilot showed why the API path needs retries: Opus 5 and three other models declined some style gradings as `bio` (answers about mercury the element, light bulbs).
+
+### 10.2 What the eval drove in the system
+
+Each of these was a prompt rule first; where the rule didn't hold, it became code:
+- **Claims checked against their sources by meaning** (`wiki_search/verify.py`): a separate call compares each cited claim with the cited text and sends unsupported, contradicted or distorted claims back once. Caught "height is normally distributed" cited to a section saying log-normal. Tuned once to stop flagging rounding and harmless paraphrase.
+- **Selections based on Wikipedia**: an uncited "how these were chosen" is sent back to look for a list or hub section.
+- **Length**: a brief over 625 words (25% past the recommendation) is sent back once; the eval fails only above that.
+- **Tables** only where items are compared side by side: a required `table.purpose`, two or more attribute columns, and a default of no table. Before this, 6/6 goal briefs had a table; after, tables appeared only in 3 expert comparisons.
+- **Reader level, goal sections, controversy and limits rules** in the prompt (see the root README).
+
+### 10.3 Latest results (`evals/latest_results.ipynb`, section 1)
+
+- **Goal items** (6): brief format 0.90; median 572 words; claim warnings left 0-5 per brief. Goal sections are present but still advice-heavy; the lighter-goal prompt did not hold (structural fix proposed, deferred).
+- **Reader-level pairs** (8): brief format 0.80; expert briefs are consistently deeper and longer (557-681 words vs 359-592), cost 2-4x more and keep more claim warnings (4-6 vs 0-2).
+- **Freshness**: every cited page on the time-sensitive items was edited within the year.
+- **Judged grades** (citations, completeness, relevance, style) for these runs are **not yet graded**: the packets are in the run folders. Only the two pilot items have full scores.
+- **Not yet run with the current system:** the 6 controversy and 5 limits items (an earlier run was paused).
+
+### 10.4 Open items
+
+1. Grade the pending packets for the goal and reader-level runs, and run the controversy and limits items.
+2. Review the 25 draft items (especially the controversy and limits `expected_limitations`).
+3. Goal sections: move them into their own schema field (at most 3 cited facts and one optional recommendation), as proposed.
+4. Expert briefs' residual unsupported claims.
+5. As for the fact-verification eval: no repeats, one grader (Claude, in session), items and fixes developed on the same set.
 
 ## Appendix: file map
 
@@ -481,7 +538,8 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
 |---|---|
 | `evals/data/{general,ambiguity,scope,aliases,false_premise}.jsonl` | Current eval sets (general v3; others v2), with `verified` blocks written by `verify.py`. |
 | `evals/data/archive/` | Previous versions of each set (see §3). |
-| `evals/eval_set.json` | Original 18-question dev/smoke set used by `demo.ipynb`; the reference for contamination checks. |
+| `evals/eval_set.json` | Original 18-question dev/smoke set, run by `evals/smoke_eval.ipynb`; the reference for contamination checks. `evals/verify_evidence.py` re-checks its quoted evidence against live Wikipedia. |
+| `evals/research_set.json`, `evals/run_eval.py`, `evals/graders.py`, `evals/api_judge.py` | The separate research-brief eval (see the root README); not part of this fact-verification eval. |
 | `evals/taxonomy.py` | Behaviors, expected behaviors, failure modes and groups; the footnote-rule comment. |
 | `evals/dataset.py` | Loads items and fills defaults (`eval`, `expected_behavior`). |
 | `evals/verify.py` | Checks gold sources against live Wikipedia; records revision, answer location, popularity, alias redirects. |
@@ -491,20 +549,23 @@ The baseline's 94.0% and this run's 93.6% are not comparable, because the eval s
 | `evals/manual_grading/` | Hand-grading tools: `dump` (responses next to gold, or two runs side by side), `record` (taxonomy-checked grade lines), `to_judgments` (grades → `judgments.jsonl` in the judge's schema), with the grading rules in its README. |
 | `evals/judge.py` | LLM judge (Opus 5) producing taxonomy-labelled judgments. |
 | `evals/report.py` | Markdown report for a judged run. |
-| `evals/analysis.py` | DataFrame loaders and metrics for notebooks. |
-| `evals/build_notebook.py` → `analysis.ipynb` | Dataset, contamination, variance and model-comparison notebook (v1-era sets; partial data). |
+| `evals/analysis.py` | DataFrame loaders and metrics used by `build_results_notebook.py`. |
 | `evals/build_results_notebook.py` → `results.ipynb` | Main results notebook: the latest run with remaining gaps, the baseline in Appendix A, current set composition in Appendix B. |
 | `evals/results_findings.md` | Findings and remaining gaps for the latest run. |
-| `evals/results_suite_v2_findings.md`, `results_suite_v2.ipynb` | Baseline findings and the superseded baseline notebook (its content is now Appendix A of `results.ipynb`). |
+| `evals/results_suite_v2_findings.md` | Baseline findings (Appendix A of `results.ipynb`, read by its generator). |
+| `evals/build_latest_results.py` → `latest_results.ipynb` | The latest runs of both evals: research briefs (goal, reader-level) and the v7 ambiguity round. |
 | `evals/runs/suite_v2_sonnet46/` | Baseline run: responses, manual judgments (strict rule), `grading_review_10.md`. |
 | `evals/runs/suite_v3_sonnet46/` | Improved system on the current sets (latest graded run). |
+| `evals/runs/suite_v7_short_answer/`, `suite_v7b_disamb_fix/`, `suite_v7c_readings/`, `suite_v7d_complete/` | Short answer line (graded) and the §8.4 follow-up re-runs. |
 | `evals/runs/suite_v6_final/` | v4 prompt + term pre-check (since reverted) + question-only disambiguation check, ambiguity set (graded). |
 | `evals/runs/suite_v5_rule2/` | + rewritten rule 2, ambiguity set (graded). |
 | `evals/runs/suite_v4_fix13/` | Caveat promotion + readings step, ambiguity and scope sets (ambiguity graded, scope ungraded; `_iter1`/`_iter2` are earlier prompt iterations). |
 | `evals/runs/gold_fix_regrade.jsonl` | Before/after grades for responses whose gold answers were fixed. |
-| `evals/runs/sonnet46/`, `haiku45/` | Partial repeat-1 data from the interrupted 5-repeat runs (v1-era sets). |
-| `evals/graders.py`, `run_eval.py`, `verify_evidence.py` | Older harness modules not written in this effort. |
-| `wiki_search/agent.py` | Agent loop, tools, disambiguation sub-call (sees only the question), date injection, citation and caveat retries, infobox reading. |
+| `evals/runs/sonnet46/`, `haiku45/` | Partial repeat-1 data from the interrupted 5-repeat runs (v1-era sets); their notebook was removed. |
+| `evals/graders.py`, `run_eval.py`, `api_judge.py`, `research_set.json` | The research-brief eval (§10). |
+| `evals/runs/<timestamp>_claude-sonnet-4-6/` | Research-brief eval runs (answers, traces, grading packets and verdicts, results). |
+| `wiki_search/agent.py` | Agent loop, tools, disambiguation sub-call (sees only the question, whole page as a compact list), date injection, citation and caveat retries, infobox reading; for briefs, length, table, selection and claim checks; guard against cut-off or incomplete submissions. |
+| `wiki_search/verify.py` | Claim check for research briefs: each cited claim against the text of its sources, by meaning. |
 | `wiki_search/render.py` | `submit_answer` / `submit_report` schemas, defensive rendering, citation warnings. |
 | `wiki_search/prompts.py` | System and disambiguation prompts (freshness, false-premise, footnote, language rules). |
 | `wiki_search/wikipedia.py` | MediaWiki client: search, article sections, infobox parsing, pacing and retries. |
