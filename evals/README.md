@@ -79,6 +79,8 @@ General items carry `category` and `language` instead of pair fields, and time-s
 .venv/bin/python -m evals.report --name baseline     # also writes evals/runs/baseline/report.md
 ```
 
+To grade by hand instead of with the API judge (as for every full-suite run so far), use `evals/manual_grading/` in step 3: see its README.
+
 Wikimedia rate-limits anonymous clients aggressively. Set `WIKI_USER_AGENT` to something with contact info (e.g. `wiki-search-evals/0.1 (you@example.com)`) and, if you still see HTTP 429s, `WIKI_MIN_REQUEST_INTERVAL=1.0`.
 
 ## Caveats
